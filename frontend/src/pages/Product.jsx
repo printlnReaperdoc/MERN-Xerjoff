@@ -1,8 +1,5 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import Card from '@mui/material/Card'
-import CardContent from '@mui/material/CardContent'
-import CardMedia from '@mui/material/CardMedia'
 import Typography from '@mui/material/Typography'
 import Dialog from '@mui/material/Dialog'
 import IconButton from '@mui/material/IconButton'
@@ -34,40 +31,56 @@ function Product() {
       })
   }, [slug])
 
-  if (loading) return <main><Typography variant="h4">Product</Typography><Typography>Loading...</Typography></main>
-  if (error) return <main><Typography variant="h4">Product</Typography><Typography color="error">Error: {error}</Typography></main>
-  if (!product) return <main><Typography variant="h4">Product</Typography><Typography>Product not found.</Typography></main>
+  if (loading) return (
+    <main style={{ textAlign: 'center', padding: '2rem' }}>
+      <Typography variant="h4">Product</Typography>
+      <Typography>Loading...</Typography>
+    </main>
+  )
+
+  if (error) return (
+    <main style={{ textAlign: 'center', padding: '2rem' }}>
+      <Typography variant="h4">Product</Typography>
+      <Typography color="error">Error: {error}</Typography>
+    </main>
+  )
+
+  if (!product) return (
+    <main style={{ textAlign: 'center', padding: '2rem' }}>
+      <Typography variant="h4">Product</Typography>
+      <Typography>Product not found.</Typography>
+    </main>
+  )
 
   // Compute image src
   const imgSrc = product.image_path && !product.image_path.startsWith('/') ? `/${product.image_path}` : product.image_path
 
   return (
-    <main>
+    <main style={{ textAlign: 'center', padding: '2rem' }}>
       <Button
         component={Link}
         to="/shop"
         variant="outlined"
-        sx={{ mb: 2 }}
+        sx={{ mb: 4 }}
       >
         Back to Shop
       </Button>
-      <Card sx={{ maxWidth: 400, mx: 'auto' }}>
-        <CardMedia
-          component="img"
-          height="200"
-          image={imgSrc}
+
+      {/* Display product info without Card */}
+      <div>
+        <img
+          src={imgSrc}
           alt={product.name}
-          sx={{ objectFit: 'cover', cursor: 'pointer' }}
+          style={{ maxWidth: '90%', height: 'auto', cursor: 'pointer', marginBottom: '1rem' }}
           onClick={() => setOpenImg(true)}
         />
-        <CardContent>
-          <Typography variant="h5" gutterBottom>{product.name}</Typography>
-          <Typography variant="body1">{product.description}</Typography>
-          <Typography variant="body2" color="text.secondary">Category: {product.category}</Typography>
-          <Typography variant="body2" color="text.secondary">Price: ${product.price}</Typography>
-          <Typography variant="body2" color="text.secondary">Review: {product.review} / 10</Typography>
-        </CardContent>
-      </Card>
+        <Typography variant="h5" gutterBottom>{product.name}</Typography>
+        <Typography variant="body1">{product.description}</Typography>
+        <Typography variant="body2" color="text.secondary">Category: {product.category}</Typography>
+        <Typography variant="body2" color="text.secondary">Price: ${product.price}</Typography>
+        <Typography variant="body2" color="text.secondary">Review: {product.review} / 10</Typography>
+      </div>
+
       <Dialog open={openImg} onClose={() => setOpenImg(false)} maxWidth="md">
         <IconButton
           aria-label="close"

@@ -149,8 +149,6 @@ function Header({ leftContent }) {
             </Button>
             <Button
               color="inherit"
-              component={Link}
-              to="/contact"
               sx={{
                 textTransform: 'uppercase',
                 fontSize: '0.9rem',

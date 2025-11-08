@@ -72,7 +72,7 @@ function AppContent() {
       <main
         style={{
           minHeight: '100vh',
-          paddingTop: '0px',
+          paddingTop: '120px',
           paddingBottom: '40px',
           position: 'relative',
           zIndex: 1,

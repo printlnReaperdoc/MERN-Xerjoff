@@ -10,6 +10,10 @@ import Modal from '@mui/material/Modal'
 import IconButton from '@mui/material/IconButton'
 import CloseIcon from '@mui/icons-material/Close'
 import Slider from '@mui/material/Slider'
+import FormControl from '@mui/material/FormControl'
+import Select from '@mui/material/Select'
+import MenuItem from '@mui/material/MenuItem'
+import InputLabel from '@mui/material/InputLabel'
 
 function Shop() {
   const [products, setProducts] = useState([])
@@ -23,6 +27,13 @@ function Shop() {
   const [hasMore, setHasMore] = useState(true)
   const [review, setReview] = useState(0)
   const [reviewQuery, setReviewQuery] = useState(null)
+  const [categories, setCategories] = useState([])
+  const [selectedCategory, setSelectedCategory] = useState("")
+  const [tempReview, setTempReview] = useState(0)
+  const [tempCategory, setTempCategory] = useState("")
+  const [maxPrice, setMaxPrice] = useState(1000)
+  const [priceRange, setPriceRange] = useState([0, 1000])
+  const [tempPriceRange, setTempPriceRange] = useState([0, 1000])
   const loader = useRef(null)
 
   useEffect(() => {
@@ -31,6 +42,10 @@ function Shop() {
     let url = `/api/products?page=${page}&limit=12`
     if (query) url += `&name=${encodeURIComponent(query)}`
     if (reviewQuery !== null) url += `&review=${reviewQuery}`
+    if (selectedCategory) url += `&category=${encodeURIComponent(selectedCategory)}`
+    if (priceRange[0] !== 0 || priceRange[1] !== 1000) {
+      url += `&minPrice=${priceRange[0]}&maxPrice=${priceRange[1]}`
+    }
 
     fetch(url)
       .then(res => {
@@ -40,6 +55,9 @@ function Shop() {
       .then(data => {
         if (page === 1) {
           setProducts(data.products || data)
+          // Extract unique categories
+          const uniqueCategories = [...new Set((data.products || data).map(product => product.category))]
+          setCategories(uniqueCategories)
         } else {
           setProducts(prev => [...prev, ...(data.products || data)])
         }
@@ -50,7 +68,7 @@ function Shop() {
         setError(err.message)
         setLoading(false)
       })
-  }, [query, page, reviewQuery])
+  }, [query, page, reviewQuery, selectedCategory, priceRange])
 
   useEffect(() => {
     setProducts([])
@@ -77,16 +95,37 @@ function Shop() {
     setQuery(search)
   }
 
-  const handleReset = () => {
-    setSearch("")
-    setQuery("")
+  const handleApplyFilters = () => {
+    setReviewQuery(tempReview)
+    setSelectedCategory(tempCategory)
+    setPriceRange(tempPriceRange)
+  }
+
+  const handleResetFilters = () => {
+    setTempReview(0)
     setReview(0)
     setReviewQuery(null)
+    setTempCategory("")
+    setSelectedCategory("")
+    setTempPriceRange([0, 1000])
+    setPriceRange([0, 1000])
   }
 
   const filteredProducts = reviewQuery !== null
     ? products.filter(product => Number(product.review) === Number(reviewQuery))
     : products
+
+  useEffect(() => {
+    // Get max price from API
+    fetch('/api/products/max-price')
+      .then(res => res.json())
+      .then(data => {
+        setMaxPrice(data.maxPrice)
+        setPriceRange([0, data.maxPrice])
+        setTempPriceRange([0, data.maxPrice])
+      })
+      .catch(err => console.error('Error fetching max price:', err));
+  }, []);
 
   if (loading && page === 1) return (
     <main>
@@ -128,29 +167,83 @@ function Shop() {
           <Button type="submit" variant="contained" fullWidth sx={{ mb: 1 }}>
             Search
           </Button>
-          <Button variant="outlined" fullWidth onClick={handleReset}>
+          <Button variant="outlined" fullWidth onClick={handleResetFilters}>
             Reset
           </Button>
         </form>
 
+        <div style={{ marginBottom: 20 }}>
+          <FormControl fullWidth size="small">
+            <InputLabel id="category-select-label">Category</InputLabel>
+            <Select
+              labelId="category-select-label"
+              id="category-select"
+              value={tempCategory}
+              label="Category"
+              onChange={(e) => setTempCategory(e.target.value)}
+            >
+              <MenuItem value="">All Categories</MenuItem>
+              {categories.map((category) => (
+                <MenuItem key={category} value={category}>
+                  {category}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </div>
+
+        {/* Price Range filter */}
+        <div style={{ marginBottom: 20 }}>
+          <Typography variant="subtitle1">Price Range</Typography>
+          <Typography variant="body2">
+            ${tempPriceRange[0]} - ${tempPriceRange[1]}
+          </Typography>
+          <Slider
+            value={tempPriceRange}
+            onChange={(_, newValue) => setTempPriceRange(newValue)}
+            valueLabelDisplay="auto"
+            min={0}
+            max={maxPrice}
+            step={10}
+            sx={{ mb: 2 }}
+          />
+        </div>
+
+        {/* Rating filter */}
         <div>
           <Typography variant="subtitle1">Review Rating</Typography>
-          <Typography variant="body2">Rating: {review}</Typography>
+          <Typography variant="body2">Rating: {tempReview}</Typography>
           <Slider
-            value={review}
+            value={tempReview}
             min={0}
             max={10}
             step={1}
             marks
             valueLabelDisplay="auto"
-            onChange={(_, val) => setReview(val)}
+            onChange={(_, val) => {
+              setTempReview(val)
+              setReview(val)
+            }}
             sx={{ mb: 2 }}
           />
-          <Button variant="contained" onClick={() => setReviewQuery(review)} fullWidth sx={{ mb: 1 }}>
-            Apply Filter
+        </div>
+
+        {/* Filter buttons */}
+        <div style={{ marginTop: 20 }}>
+          <Button 
+            variant="contained" 
+            onClick={handleApplyFilters} 
+            fullWidth 
+            sx={{ mb: 1 }}
+          >
+            Apply All Filters
           </Button>
-          <Button variant="outlined" onClick={() => setReviewQuery(null)} fullWidth>
-            Reset Filter
+          <Button 
+            variant="outlined" 
+            onClick={handleResetFilters} 
+            fullWidth
+          >
+            Reset All Filters
           </Button>
         </div>
       </div>
