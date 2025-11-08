@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import {
   Box, Typography, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField,
-  IconButton, Chip, Rating, Alert, Paper, Checkbox, TableContainer, Table, TableBody, TableCell, TableHead, TableRow
+  IconButton, Chip, Rating, Alert, Paper
 } from '@mui/material'
 import StarIcon from '@mui/icons-material/Star'
 import StarBorderIcon from '@mui/icons-material/StarBorder'
 import { useNavigate } from 'react-router-dom'
+import { DataGrid } from '@mui/x-data-grid'
 
 function Manage() {
   const [products, setProducts] = useState([])
@@ -246,16 +247,6 @@ function Manage() {
     }
   }
 
-  // helper: safely parse JSON responses, falling back to raw text
-  const parseResponse = async (response) => {
-    const contentType = response.headers.get('content-type') || ''
-    if (contentType.includes('application/json')) {
-      return await response.json()
-    }
-    const text = await response.text()
-    return { __rawText: text }
-  }
-
   const handleBulkDelete = async () => {
     if (!selectedIds.length) return
     try {
@@ -264,41 +255,90 @@ function Manage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ids: selectedIds }),
       })
-
-      const data = await parseResponse(response)
-
-      if (!response.ok) {
-        const msg = (data && data.error) || data.__rawText || 'Bulk delete failed'
-        throw new Error(msg)
-      }
-
-      // success: either JSON or raw text from server
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || 'Bulk delete failed')
       setSuccess('Selected products deleted successfully!')
       setSelectedIds([])
       fetchProducts()
     } catch (err) {
-      // if server returned HTML (index.html) the raw text will be included in err.message
       setError(err.message)
     }
-  }
-
-  // selection helpers for the Table checkboxes
-  const toggleSelectAll = () => {
-    if (products.length === 0) return
-    if (selectedIds.length === products.length) {
-      setSelectedIds([])
-    } else {
-      setSelectedIds(products.map(p => p._id))
-    }
-  }
-
-  const toggleSelectOne = (id) => {
-    setSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
   }
 
   if (!userChecked) return <main><Typography>Checking permissions...</Typography></main>
   if (loading) return <main><Typography>Loading...</Typography></main>
   if (error && !products.length) return <main><Typography color="error">Error: {error}</Typography></main>
+
+  // DataGrid columns
+  const columns = [
+    {
+      field: 'image_path',
+      headerName: 'Image',
+      width: 80,
+      renderCell: (params) =>
+        params.value ? (
+          <img
+            src={params.value}
+            alt={params.row.name}
+            style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 4 }}
+          />
+        ) : null,
+      sortable: false,
+      filterable: false,
+    },
+    { field: 'name', headerName: 'Name', width: 180 },
+    { field: 'price', headerName: 'Price', width: 100, renderCell: (params) => `$${params.value}` },
+    { field: 'category', headerName: 'Category', width: 120 },
+    {
+      field: 'review',
+      headerName: 'Review',
+      width: 120,
+      renderCell: (params) => (
+        <>
+          <Rating value={(params.value || 0) / 2} readOnly precision={0.5} size="small" />
+          <Typography variant="caption" sx={{ ml: 1 }}>
+            {params.value || 0}/10
+          </Typography>
+        </>
+      ),
+      sortable: false,
+      filterable: false,
+    },
+    {
+      field: 'is_featured',
+      headerName: 'Featured',
+      width: 120,
+      renderCell: (params) =>
+        params.value ? (
+          <Chip label="Featured" color="primary" size="small" icon={<StarIcon />} />
+        ) : (
+          <Chip label="Not Featured" size="small" variant="outlined" />
+        ),
+      sortable: false,
+      filterable: false,
+    },
+    {
+      field: 'actions',
+      headerName: 'Actions',
+      width: 220,
+      renderCell: (params) => (
+        <>
+          <Button size="small" onClick={() => handleOpenEdit(params.row)}>Edit</Button>
+          <IconButton
+            color={params.row.is_featured ? 'warning' : 'default'}
+            size="small"
+            onClick={() => handleToggleFeatured(params.row._id, params.row.is_featured)}
+            title={params.row.is_featured ? 'Unfeature Product' : 'Set as Featured'}
+          >
+            {params.row.is_featured ? <StarIcon /> : <StarBorderIcon />}
+          </IconButton>
+          <Button size="small" color="error" onClick={() => handleOpenDelete(params.row._id)}>Delete</Button>
+        </>
+      ),
+      sortable: false,
+      filterable: false,
+    },
+  ]
 
   return (
     <main>
@@ -337,83 +377,18 @@ function Manage() {
         Bulk Delete
       </Button>
 
-      {/* Replaced DataGrid with MUI Table to avoid x-data-grid runtime error */}
-      <TableContainer component={Paper} sx={{ mb: 2 }}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell padding="checkbox">
-                <Checkbox
-                  indeterminate={selectedIds.length > 0 && selectedIds.length < products.length}
-                  checked={products.length > 0 && selectedIds.length === products.length}
-                  onChange={toggleSelectAll}
-                  inputProps={{ 'aria-label': 'select all products' }}
-                />
-              </TableCell>
-              <TableCell>Image</TableCell>
-              <TableCell>Name</TableCell>
-              <TableCell>Price</TableCell>
-              <TableCell>Category</TableCell>
-              <TableCell>Review</TableCell>
-              <TableCell>Featured</TableCell>
-              <TableCell>Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {products.map(product => {
-              const isSelected = selectedIds.includes(product._id)
-              return (
-                <TableRow key={product._id} hover selected={isSelected}>
-                  <TableCell padding="checkbox">
-                    <Checkbox
-                      checked={isSelected}
-                      onChange={() => toggleSelectOne(product._id)}
-                      inputProps={{ 'aria-label': `select product ${product.name}` }}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    {product.image_path && (
-                      <img
-                        src={product.image_path}
-                        alt={product.name}
-                        style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 4 }}
-                      />
-                    )}
-                  </TableCell>
-                  <TableCell>{product.name}</TableCell>
-                  <TableCell>${product.price}</TableCell>
-                  <TableCell>{product.category}</TableCell>
-                  <TableCell>
-                    <Rating value={(product.review || 0) / 2} readOnly precision={0.5} size="small" />
-                    <Typography variant="caption" sx={{ ml: 1 }}>
-                      {product.review || 0}/10
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    {product.is_featured ? (
-                      <Chip label="Featured" color="primary" size="small" icon={<StarIcon />} />
-                    ) : (
-                      <Chip label="Not Featured" size="small" variant="outlined" />
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Button size="small" onClick={() => handleOpenEdit(product)}>Edit</Button>
-                    <IconButton
-                      color={product.is_featured ? 'warning' : 'default'}
-                      size="small"
-                      onClick={() => handleToggleFeatured(product._id, product.is_featured)}
-                      title={product.is_featured ? 'Unfeature Product' : 'Set as Featured'}
-                    >
-                      {product.is_featured ? <StarIcon /> : <StarBorderIcon />}
-                    </IconButton>
-                    <Button size="small" color="error" onClick={() => handleOpenDelete(product._id)}>Delete</Button>
-                  </TableCell>
-                </TableRow>
-              )
-            })}
-          </TableBody>
-        </Table>
-      </TableContainer>
+      <Box sx={{ height: 600, width: '100%', mb: 2 }}>
+        <DataGrid
+          rows={products.map(p => ({ ...p, id: p._id }))}
+          columns={columns}
+          checkboxSelection
+          onRowSelectionModelChange={ids => setSelectedIds(ids)}
+          rowSelectionModel={selectedIds}
+          disableRowSelectionOnClick={false}
+          loading={loading}
+          getRowId={row => row._id}
+        />
+      </Box>
 
       <Dialog open={openForm} onClose={() => setOpenForm(false)} maxWidth="sm" fullWidth>
         <DialogTitle>{editingId ? 'Edit Product' : 'Create Product'}</DialogTitle>

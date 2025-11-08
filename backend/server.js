@@ -198,6 +198,21 @@ app.delete('/api/products/:id', async (req, res) => {
   }
 });
 
+// Bulk delete products (accepts { ids: [...] })
+app.post('/api/products/bulk-delete', async (req, res) => {
+  try {
+    const { ids } = req.body;
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ error: 'No product ids provided' });
+    }
+    const result = await Product.deleteMany({ _id: { $in: ids } });
+    res.json({ success: true, deletedCount: result.deletedCount });
+  } catch (err) {
+    console.error('Bulk delete error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // SET/UNSET featured product (ADMIN ONLY)
 app.patch('/api/products/:id/featured', async (req, res) => {
   try {
