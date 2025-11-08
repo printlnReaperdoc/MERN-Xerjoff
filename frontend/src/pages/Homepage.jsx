@@ -189,6 +189,13 @@ function Homepage() {
               >
                 Manage Users
               </Button>
+              <Button
+                variant="contained"
+                onClick={() => navigate('/sales')}
+                sx={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}
+              >
+                Sales
+              </Button>
             </Box>
           </Box>
         </Container>

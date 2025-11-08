@@ -31,7 +31,6 @@ function Shop() {
   const [selectedCategory, setSelectedCategory] = useState("")
   const [tempReview, setTempReview] = useState(0)
   const [tempCategory, setTempCategory] = useState("")
-  const [maxPrice, setMaxPrice] = useState(1000)
   const [priceRange, setPriceRange] = useState([0, 1000])
   const [tempPriceRange, setTempPriceRange] = useState([0, 1000])
   const loader = useRef(null)
@@ -115,18 +114,6 @@ function Shop() {
     ? products.filter(product => Number(product.review) === Number(reviewQuery))
     : products
 
-  useEffect(() => {
-    // Get max price from API
-    fetch('/api/products/max-price')
-      .then(res => res.json())
-      .then(data => {
-        setMaxPrice(data.maxPrice)
-        setPriceRange([0, data.maxPrice])
-        setTempPriceRange([0, data.maxPrice])
-      })
-      .catch(err => console.error('Error fetching max price:', err));
-  }, []);
-
   if (loading && page === 1) return (
     <main>
       <h4>Shop Page</h4>
@@ -203,7 +190,7 @@ function Shop() {
             onChange={(_, newValue) => setTempPriceRange(newValue)}
             valueLabelDisplay="auto"
             min={0}
-            max={maxPrice}
+            max={1000}
             step={10}
             sx={{ mb: 2 }}
           />

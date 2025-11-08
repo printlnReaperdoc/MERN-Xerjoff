@@ -17,6 +17,7 @@ import Product from './pages/Product'
 import Manage from './pages/Manage'
 import Forbidden from './pages/Forbidden'
 import Users from './pages/ManageUsers'
+import Sales from './pages/Sales'
 import './App.css'
 
 function AppContent() {
@@ -94,6 +95,7 @@ function AppContent() {
           <Route path="/manage" element={<Manage />} />
           <Route path="/users" element={<Users />} />
           <Route path="/forbidden" element={<Forbidden />} />
+          <Route path="/sales" element={<Sales />} />
         </Routes>
       </main>
 

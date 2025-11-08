@@ -3,6 +3,7 @@ import Box from '@mui/material/Box'
 import TextField from '@mui/material/TextField'
 import Button from '@mui/material/Button'
 import Typography from '@mui/material/Typography'
+import { Link } from 'react-router-dom'
 
 function Register() {
   const [name, setName] = useState('')
@@ -55,61 +56,89 @@ function Register() {
   }
 
   return (
-    <main>
-      <Typography variant="h4" gutterBottom>Register Page</Typography>
-      <Typography variant="body1" gutterBottom>Create a new account.</Typography>
-      <Box component="form" onSubmit={handleSubmit} sx={{ maxWidth: 300 }}>
-        <TextField
-          label="Name"
-          type="text"
-          value={name}
-          onChange={e => setName(e.target.value)}
-          required
-          fullWidth
-          margin="normal"
-        />
-        <TextField
-          label="Email"
-          type="email"
-          value={email}
-          onChange={e => setEmail(e.target.value)}
-          required
-          fullWidth
-          margin="normal"
-        />
-        <TextField
-          label="Password"
-          type="password"
-          value={password}
-          onChange={e => setPassword(e.target.value)}
-          required
-          fullWidth
-          margin="normal"
-        />
-        <Button
-          variant="outlined"
-          component="label"
-          fullWidth
-          sx={{ mt: 2, mb: 1 }}
-        >
-          {profileImage ? profileImage.name : 'Upload Profile Picture'}
-          <input
-            type="file"
-            accept="image/*"
-            hidden
-            onChange={e => {
-              if (e.target.files && e.target.files[0]) {
-                setProfileImage(e.target.files[0])
-              }
-            }}
+    // Changed: outer Box centers the content both vertically and horizontally
+    <Box
+      sx={{
+        display: 'flex',
+        minHeight: '100vh',
+        alignItems: 'center',
+        justifyContent: 'center',
+        p: 2,
+      }}
+    >
+      <Box component="main" sx={{ width: '100%', maxWidth: 420 }}>
+        <Typography variant="h4" gutterBottom align="center">
+          Register Page
+        </Typography>
+        <Typography variant="body1" gutterBottom align="center">
+          Create a new account.
+        </Typography>
+
+        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
+          <TextField
+            label="Name"
+            type="text"
+            value={name}
+            onChange={e => setName(e.target.value)}
+            required
+            fullWidth
+            margin="normal"
           />
-        </Button>
-        <Button type="submit" variant="contained" fullWidth sx={{ mt: 2 }}>
-          Register
-        </Button>
+          <TextField
+            label="Email"
+            type="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            required
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            label="Password"
+            type="password"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            required
+            fullWidth
+            margin="normal"
+          />
+          <Button
+            variant="outlined"
+            component="label"
+            fullWidth
+            sx={{ mt: 2, mb: 1 }}
+          >
+            {profileImage ? profileImage.name : 'Upload Profile Picture'}
+            <input
+              type="file"
+              accept="image/*"
+              hidden
+              onChange={e => {
+                if (e.target.files && e.target.files[0]) {
+                  setProfileImage(e.target.files[0])
+                }
+              }}
+            />
+          </Button>
+          <Button type="submit" variant="contained" fullWidth sx={{ mt: 2 }}>
+            Register
+          </Button>
+        </Box>
+
+        {message && (
+          <Typography sx={{ mt: 2 }} align="center">
+            {message}
+          </Typography>
+        )}
+
+        <Typography sx={{ mt: 3 }} align="center">
+          Already have an account?{' '}
+          <Link to="/login">
+            Login
+          </Link>
+        </Typography>
       </Box>
-      {message && <Typography sx={{ mt: 2 }}>{message}</Typography>}
-    </main>
+    </Box>
   )
 }
 

@@ -41,49 +41,70 @@ function Login() {
   };
 
   return (
-    <main>
-      <Typography variant="h4" gutterBottom>
-        Login Page
-      </Typography>
-      <Box component="form" onSubmit={handleSubmit} sx={{ maxWidth: 300 }}>
-        <TextField
-          id="email"
-          label="Email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          disabled={loading}
-          fullWidth
-          margin="normal"
-        />
-        <TextField
-          id="password"
-          label="Password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          disabled={loading}
-          fullWidth
-          margin="normal"
-        />
-        <Button
-          type="submit"
-          variant="contained"
-          disabled={loading}
-          fullWidth
-          sx={{ mt: 2 }}
-        >
-          {loading ? "Logging in..." : "Login"}
-        </Button>
-      </Box>
-      {message && (
-        <Typography sx={{ mt: 2 }}>
-          {message}
+    <Box
+      sx={{
+        display: "flex",
+        minHeight: "100vh",
+        alignItems: "center",
+        justifyContent: "center",
+        p: 2,
+      }}
+    >
+      <Box component="main" sx={{ width: "100%", maxWidth: 420 }}>
+        <Typography variant="h4" gutterBottom align="center">
+          Login Page
         </Typography>
-      )}
-    </main>
+        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
+          <TextField
+            id="email"
+            label="Email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            disabled={loading}
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            id="password"
+            label="Password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            disabled={loading}
+            fullWidth
+            margin="normal"
+          />
+          <Button
+            type="submit"
+            variant="contained"
+            disabled={loading}
+            fullWidth
+            sx={{ mt: 2 }}
+          >
+            {loading ? "Logging in..." : "Login"}
+          </Button>
+
+          <Button
+            type="button"
+            variant="outlined"
+            onClick={() => navigate("/register")}
+            disabled={loading}
+            fullWidth
+            sx={{ mt: 1 }}
+          >
+            Register
+          </Button>
+        </Box>
+        {message && (
+          <Typography sx={{ mt: 2 }} align="center">
+            {message}
+          </Typography>
+        )}
+      </Box>
+    </Box>
   );
 }
 
