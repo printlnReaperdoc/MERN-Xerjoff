@@ -22,6 +22,12 @@ function Manage() {
   const [userChecked, setUserChecked] = useState(false)
   const [unauthorized, setUnauthorized] = useState(false)
   const [selectedIds, setSelectedIds] = useState([])
+  const [formErrors, setFormErrors] = useState({
+    name: '',
+    price: '',
+    category: '',
+    review: ''
+  })
   const navigate = useNavigate()
 
   const fetchProducts = () => {
@@ -103,10 +109,42 @@ function Manage() {
     }
   }
 
+  const validateForm = () => {
+    const errors = {}
+    let isValid = true
+
+    if (!form.name.trim()) {
+      errors.name = 'Name is required'
+      isValid = false
+    }
+
+    if (!form.price || form.price <= 0) {
+      errors.price = 'Price must be greater than 0'
+      isValid = false
+    }
+
+    if (!form.category.trim()) {
+      errors.category = 'Category is required'
+      isValid = false
+    }
+
+    if (form.review < 0 || form.review > 10) {
+      errors.review = 'Review must be between 0 and 10'
+      isValid = false
+    }
+
+    setFormErrors(errors)
+    return isValid
+  }
+
   const handleFormSubmit = async (e) => {
     e.preventDefault()
     setError(null)
     setSuccess('')
+    
+    if (!validateForm()) {
+      return
+    }
     
     let image_path = form.image_path || '/public/uploads/sample.image.jpg'
 
@@ -423,20 +461,23 @@ function Manage() {
               label="Name"
               value={form.name}
               onChange={e => setForm({ ...form, name: e.target.value })}
-              required
+              error={!!formErrors.name}
+              helperText={formErrors.name}
             />
             <TextField
               label="Price"
               type="number"
               value={form.price}
               onChange={e => setForm({ ...form, price: e.target.value })}
-              required
+              error={!!formErrors.price}
+              helperText={formErrors.price}
             />
             <TextField
               label="Category"
               value={form.category}
               onChange={e => setForm({ ...form, category: e.target.value })}
-              required
+              error={!!formErrors.category}
+              helperText={formErrors.category}
             />
             <TextField
               label="Description"
@@ -450,7 +491,9 @@ function Manage() {
               type="number"
               value={form.review}
               onChange={e => setForm({ ...form, review: e.target.value })}
-              inputProps={{ min: 0, max: 10 }}
+              error={!!formErrors.review}
+              helperText={formErrors.review}
+              inputProps={{ step: 'any' }}
             />
             <Button variant="outlined" component="label" fullWidth>
               {imageFile ? imageFile.name : 'Upload Image'}

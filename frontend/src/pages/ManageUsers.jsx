@@ -16,6 +16,10 @@ function ManageUsers() {
   const [deleteId, setDeleteId] = useState(null)
   const [userChecked, setUserChecked] = useState(false)
   const [unauthorized, setUnauthorized] = useState(false)
+  const [formErrors, setFormErrors] = useState({
+    name: '',
+    email: ''
+  })
   const navigate = useNavigate()
 
   // Fetch users
@@ -76,9 +80,34 @@ function ManageUsers() {
     setOpenForm(true)
   }
 
+  // Add validation function
+  const validateForm = () => {
+    const errors = {}
+    let isValid = true
+
+    if (!form.name.trim()) {
+      errors.name = 'Name is required'
+      isValid = false
+    }
+
+    if (!form.email) {
+      errors.email = 'Email is required'
+      isValid = false
+    } else if (!/\S+@\S+\.\S+/.test(form.email)) {
+      errors.email = 'Invalid email format'
+      isValid = false
+    }
+
+    setFormErrors(errors)
+    return isValid
+  }
+
   // Submit edit
   const handleFormSubmit = async (e) => {
     e.preventDefault()
+    if (!validateForm()) {
+      return
+    }
     const payload = { ...form }
     fetch(`/api/users/${editingId}`, {
       method: 'PUT',
@@ -163,14 +192,22 @@ function ManageUsers() {
             <TextField
               label="Name"
               value={form.name}
-              onChange={e => setForm({ ...form, name: e.target.value })}
-              required
+              onChange={e => {
+                setForm({ ...form, name: e.target.value })
+                if (formErrors.name) setFormErrors({ ...formErrors, name: '' })
+              }}
+              error={!!formErrors.name}
+              helperText={formErrors.name}
             />
             <TextField
               label="Email"
               value={form.email}
-              onChange={e => setForm({ ...form, email: e.target.value })}
-              required
+              onChange={e => {
+                setForm({ ...form, email: e.target.value })
+                if (formErrors.email) setFormErrors({ ...formErrors, email: '' })
+              }}
+              error={!!formErrors.email}
+              helperText={formErrors.email}
             />
             <FormControl>
               <InputLabel>Status</InputLabel>

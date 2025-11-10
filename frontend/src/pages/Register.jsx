@@ -11,6 +11,11 @@ function Register() {
   const [password, setPassword] = useState('')
   const [profileImage, setProfileImage] = useState(null)
   const [message, setMessage] = useState('')
+  const [errors, setErrors] = useState({
+    name: '',
+    email: '',
+    password: ''
+  })
 
   // Upload image and return filename
   const uploadProfileImage = async (file) => {
@@ -25,9 +30,47 @@ function Register() {
     return data.filename
   }
 
+  const validateForm = () => {
+    const newErrors = {
+      name: '',
+      email: '',
+      password: ''
+    }
+    let isValid = true
+
+    if (!name.trim()) {
+      newErrors.name = 'Name is required'
+      isValid = false
+    }
+
+    if (!email) {
+      newErrors.email = 'Email is required'
+      isValid = false
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      newErrors.email = 'Invalid email format'
+      isValid = false
+    }
+
+    if (!password) {
+      newErrors.password = 'Password is required'
+      isValid = false
+    } else if (password.length < 3) {
+      newErrors.password = 'Password must be at least 3 characters'
+      isValid = false
+    }
+
+    setErrors(newErrors)
+    return isValid
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setMessage('')
+    
+    if (!validateForm()) {
+      return
+    }
+    
     let profileImageFilename = 'defaultuserpic.png'
     try {
       if (profileImage) {
@@ -79,8 +122,12 @@ function Register() {
             label="Name"
             type="text"
             value={name}
-            onChange={e => setName(e.target.value)}
-            required
+            onChange={e => {
+              setName(e.target.value)
+              if (errors.name) setErrors({ ...errors, name: '' })
+            }}
+            error={!!errors.name}
+            helperText={errors.name}
             fullWidth
             margin="normal"
           />
@@ -88,8 +135,12 @@ function Register() {
             label="Email"
             type="email"
             value={email}
-            onChange={e => setEmail(e.target.value)}
-            required
+            onChange={e => {
+              setEmail(e.target.value)
+              if (errors.email) setErrors({ ...errors, email: '' })
+            }}
+            error={!!errors.email}
+            helperText={errors.email}
             fullWidth
             margin="normal"
           />
@@ -97,8 +148,12 @@ function Register() {
             label="Password"
             type="password"
             value={password}
-            onChange={e => setPassword(e.target.value)}
-            required
+            onChange={e => {
+              setPassword(e.target.value)
+              if (errors.password) setErrors({ ...errors, password: '' })
+            }}
+            error={!!errors.password}
+            helperText={errors.password}
             fullWidth
             margin="normal"
           />
