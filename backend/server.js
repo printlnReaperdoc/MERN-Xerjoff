@@ -356,5 +356,56 @@ app.delete('/api/users/:id', async (req, res) => {
   }
 });
 
+// Get current user
+app.get('/api/users/me', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization; // Bearer token
+    if (!authHeader) return res.status(401).json({ error: 'Unauthorized' });
+
+    const token = authHeader.split(' ')[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET); // decode JWT
+    const userId = decoded.id;
+
+    const user = await User.findById(userId).select('-password');
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    res.json(user);
+  } catch (err) {
+    console.error("Error in /api/users/me:", err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Update current user
+app.put('/api/users/me', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization; // Bearer token
+    if (!authHeader) return res.status(401).json({ error: 'Unauthorized' });
+
+    const token = authHeader.split(' ')[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decoded.id;
+
+    const { name, password, profileImage } = req.body;
+    const updateFields = { name, profileImage };
+
+    if (password) {
+      updateFields.password = await bcrypt.hash(password, 10); // bcrypt hash
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      updateFields,
+      { new: true }
+    ).select('-password');
+
+    res.json(updatedUser);
+  } catch (err) {
+    console.error("Error in /api/users/me PUT:", err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

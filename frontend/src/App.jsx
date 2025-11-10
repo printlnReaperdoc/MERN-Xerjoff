@@ -18,6 +18,7 @@ import Manage from './pages/Manage'
 import Forbidden from './pages/Forbidden'
 import Users from './pages/ManageUsers'
 import Sales from './pages/Sales'
+import UpdateProfile from './pages/UpdateProfile'
 import './App.css'
 
 function AppContent() {
@@ -96,6 +97,7 @@ function AppContent() {
           <Route path="/users" element={<Users />} />
           <Route path="/forbidden" element={<Forbidden />} />
           <Route path="/sales" element={<Sales />} />
+          <Route path="/update-profile" element={<UpdateProfile />} />
         </Routes>
       </main>
 
