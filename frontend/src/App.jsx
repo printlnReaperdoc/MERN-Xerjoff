@@ -78,11 +78,6 @@ function AppContent() {
           paddingBottom: '40px',
           position: 'relative',
           zIndex: 1,
-          margin: '0 auto',
-          maxWidth: isHomepage || location.pathname === '/shop' ? '100%' : '960px', // 👈 allow Shop to be full width
-          backgroundColor: isHomepage ? 'transparent' : theme.palette.background.paper,
-          borderRadius: isHomepage ? 0 : 12,
-          boxShadow: isHomepage ? 'none' : theme.shadows[3],
         }}
       >
         <Routes>
